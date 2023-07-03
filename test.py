@@ -21,7 +21,7 @@ def batched_predict(model, inp, coord, cell, bsize):
         preds = []
         while ql < n:
             qr = min(ql + bsize, n)
-            pred = model.query_rgb(coord[:, ql: qr, :], cell[:, ql: qr, :])
+            pred = model.query_rgb(coord[:, ql: qr, :], cell[:, ql: qr, :]) #传入当前批次的coord和cell，得到预测结果pred
             preds.append(pred)
             ql = qr
         pred = torch.cat(preds, dim=1)
@@ -66,6 +66,7 @@ def eval_psnr(loader, model, data_norm=None, eval_type=None, eval_bsize=None,
         if eval_bsize is None:
             with torch.no_grad():
                 pred = model(inp, batch['coord'], batch['cell'])
+                #  pred = model( batch['coord'])
         else:
             pred = batched_predict(model, inp,
                 batch['coord'], batch['cell'], eval_bsize)
@@ -92,9 +93,9 @@ def eval_psnr(loader, model, data_norm=None, eval_type=None, eval_bsize=None,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config')
-    parser.add_argument('--model')
-    parser.add_argument('--gpu', default='0')
+    parser.add_argument('-config')
+    parser.add_argument('-model')
+    parser.add_argument('-gpu', default='0')
     args = parser.parse_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu

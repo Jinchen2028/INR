@@ -11,13 +11,14 @@ def register(name):
     return decorator
 
 
-def make(model_spec, args=None, load_sd=False):
+def make(model_spec, args=None, load_sd=False): #no_upsampling,选择网络
     if args is not None:
         model_args = copy.deepcopy(model_spec['args'])
         model_args.update(args)
     else:
-        model_args = model_spec['args']
+        model_args = model_spec['args'] #liif
     model = models[model_spec['name']](**model_args)
+    # print(model) #打印网络
     if load_sd:
         model.load_state_dict(model_spec['sd'])
     return model

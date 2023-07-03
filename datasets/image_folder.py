@@ -13,7 +13,7 @@ from datasets import register
 
 
 @register('image-folder')
-class ImageFolder(Dataset):
+class ImageFolder(Dataset): #针对单个数据集加载
 
     def __init__(self, root_path, split_file=None, split_key=None, first_k=None,
                  repeat=1, cache='none'):
@@ -32,10 +32,10 @@ class ImageFolder(Dataset):
         for filename in filenames:
             file = os.path.join(root_path, filename)
 
-            if cache == 'none':
+            if cache == 'none': # 数据集对象只保存图像文件的路径列表，每次调用 __getitem__ 方法时，会根据索引从文件中读取图像数据并返回
                 self.files.append(file)
 
-            elif cache == 'bin':
+            elif cache == 'bin': #图像数据读取并保存为二进制文件，以加快后续读取的速度，保存在与根目录同级的目录下的 _bin_ 文件夹中
                 bin_root = os.path.join(os.path.dirname(root_path),
                     '_bin_' + os.path.basename(root_path))
                 if not os.path.exists(bin_root):
@@ -49,7 +49,7 @@ class ImageFolder(Dataset):
                     print('dump', bin_file)
                 self.files.append(bin_file)
 
-            elif cache == 'in_memory':
+            elif cache == 'in_memory': #在初始化过程中将图像数据以 torch.Tensor 的形式保存在内存中。
                 self.files.append(transforms.ToTensor()(
                     Image.open(file).convert('RGB')))
 
@@ -74,7 +74,7 @@ class ImageFolder(Dataset):
 
 
 @register('paired-image-folders')
-class PairedImageFolders(Dataset):
+class PairedImageFolders(Dataset): #针对一对数据集加载
 
     def __init__(self, root_path_1, root_path_2, **kwargs):
         self.dataset_1 = ImageFolder(root_path_1, **kwargs)

@@ -26,11 +26,14 @@ if __name__ == '__main__':
     model = models.make(torch.load(args.model)['model'], load_sd=True).cuda()
 
     h, w = list(map(int, args.resolution.split(',')))
-    coord = make_coord((h, w)).cuda()
-    cell = torch.ones_like(coord)
-    cell[:, 0] *= 2 / h
+    coord = make_coord((h, w)).cuda() #根据输入的大小，产生坐标 h*w,2
+    # print("coord",coord.shape)
+    cell = torch.ones_like(coord) #创建了一个和coord张量形状相同的张量，所有元素的值初始化为1
+    cell[:, 0] *= 2 / h #缩放到[-1,1]
     cell[:, 1] *= 2 / w
     pred = batched_predict(model, ((img - 0.5) / 0.5).cuda().unsqueeze(0),
-        coord.unsqueeze(0), cell.unsqueeze(0), bsize=30000)[0]
+        coord.unsqueeze(0), cell.unsqueeze(0), bsize=30000)[0] #对图像进行分批次预测，返回值还没展开
+    # print("1",pred)
     pred = (pred * 0.5 + 0.5).clamp(0, 1).view(h, w, 3).permute(2, 0, 1).cpu()
+    # print("2", pred)
     transforms.ToPILImage()(pred).save(args.output)

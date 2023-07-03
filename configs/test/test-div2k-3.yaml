@@ -2,8 +2,8 @@ test_dataset:
   dataset:
     name: paired-image-folders
     args:
-      root_path_1: ./load/div2k/DIV2K_valid_LR_bicubic/X3
-      root_path_2: ./load/div2k/DIV2K_valid_HR
+      root_path_1: ./data/DIV2K/val/LR/x3
+      root_path_2: ./data/DIV2K/val/HR
   wrapper:
     name: sr-implicit-paired
     args: {}

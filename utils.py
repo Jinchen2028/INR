@@ -2,12 +2,38 @@ import os
 import time
 import shutil
 import math
-
+import cv2
 import torch
 import numpy as np
 from torch.optim import SGD, Adam
 from tensorboardX import SummaryWriter
+import matplotlib.pyplot as plt
 
+def show_feature_map(feature_map,layer,name='rgb',rgb=False):
+    feature_map = feature_map.squeeze(0)
+    #if rgb: feature_map = feature_map.permute(1,2,0)*0.5+0.5
+    feature_map = feature_map.cpu().numpy()
+    feature_map_num = feature_map.shape[0]
+    row_num = math.ceil(np.sqrt(feature_map_num))
+    if rgb:
+        #plt.figure()
+        #plt.imshow(feature_map)
+        #plt.axis('off')
+        feature_map = cv2.cvtColor(feature_map,cv2.COLOR_BGR2RGB)
+        cv2.imwrite('data/'+layer+'/'+name+".png",feature_map*255)
+        #plt.show()
+    else:
+        plt.figure()
+        for index in range(1, feature_map_num+1):
+            t = (feature_map[index-1]*255).astype(np.uint8)
+            t = cv2.applyColorMap(t, cv2.COLORMAP_TWILIGHT)
+            plt.subplot(row_num, row_num, index)
+            plt.imshow(t, cmap='gray')
+            plt.axis('off')
+            #ensure_path('data/'+layer)
+            cv2.imwrite('data/'+layer+'/'+str(name)+'_'+str(index)+".png",t)
+        #plt.show()
+        plt.savefig('data/'+layer+'/'+str(name)+".png")
 
 class Averager():
 
@@ -105,13 +131,13 @@ def make_coord(shape, ranges=None, flatten=True):
     coord_seqs = []
     for i, n in enumerate(shape):
         if ranges is None:
-            v0, v1 = -1, 1
+            v0, v1 = -1, 1 #坐标范围
         else:
             v0, v1 = ranges[i]
-        r = (v1 - v0) / (2 * n)
-        seq = v0 + r + (2 * r) * torch.arange(n).float()
+        r = (v1 - v0) / (2 * n) #坐标间隔
+        seq = v0 + r + (2 * r) * torch.arange(n).float() #函数生成从 0 到 n-1 的浮点数序列，并将其乘以坐标间隔 r，再加上起始值 v0 + r，得到具体的坐标序列
         coord_seqs.append(seq)
-    ret = torch.stack(torch.meshgrid(*coord_seqs), dim=-1)
+    ret = torch.stack(torch.meshgrid(*coord_seqs), dim=-1) #使用 torch.meshgrid 函数将这些坐标序列组合成多维坐标网格
     if flatten:
         ret = ret.view(-1, ret.shape[-1])
     return ret
